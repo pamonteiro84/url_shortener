@@ -1,0 +1,20 @@
+# Binários
+/server
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Binário de testes (go test -c)
+*.test
+
+# Output de go test -cover
+*.out
+
+# Go workspace (se vier a ser usado)
+go.work
+go.work.sum
+
+# Variáveis de ambiente locais
+.env
