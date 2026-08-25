@@ -1,4 +1,8 @@
+colima-start:
+	colima start
+
 docker-up:
+	colima start
 	docker compose up -d
 
 docker-down:

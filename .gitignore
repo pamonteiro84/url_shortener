@@ -18,3 +18,7 @@ go.work.sum
 
 # Variáveis de ambiente locais
 .env
+.claude
+
+# Notas pessoais de aprendizagem, não faz parte do projeto
+CHEATSHEET.md
