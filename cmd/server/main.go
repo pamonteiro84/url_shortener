@@ -7,7 +7,8 @@ import (
 	"github.com/joho/godotenv"
 
 	"url_shortener/internal/database"
-	"url_shortener/internal/url"
+	"url_shortener/internal/models"
+	
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.AutoMigrate(&url.URL{})
+	db.AutoMigrate(&models.URL{})
 
 	r := gin.Default()
 	r.GET("/health", func(c *gin.Context) {
