@@ -2,12 +2,13 @@ package service
 
 import (
 	"errors"
+	"url_shortener/internal/apperrors"
 	"url_shortener/internal/models"
 	"url_shortener/internal/shortcode"
 	"url_shortener/internal/storage"
 )
 
-var ErrAlreadyExists = errors.New("url já tem shortcode")
+var errAlreadyExists = errors.New("url já tem shortcode")
 
 type Service struct {
 	storage storage.URLRepository
@@ -22,7 +23,10 @@ func (s *Service) ShortenURL(originalURL string) (string, error) {
 
 	if existingURL, err := s.GetOriginalURL(shortCode); err == nil &&
 		existingURL == originalURL {
-		return shortCode, ErrAlreadyExists
+		return shortCode, &apperrors.AppError{
+			Kind: apperrors.AlreadyExists,
+			Err:  errAlreadyExists,
+		}
 	}
 	url := &models.URL{
 		OriginalURL: originalURL,
