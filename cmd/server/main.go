@@ -2,13 +2,11 @@ package main
 
 import (
 	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-
+	"github.com/go-gormigrate/gormigrate/v2"
 	"url_shortener/internal/database"
-	"url_shortener/internal/models"
-	
+	"url_shortener/internal/migrations"
 )
 
 func main() {
@@ -20,7 +18,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db.AutoMigrate(&models.URL{})
+	
+	m := gormigrate.New(db, gormigrate.DefaultOptions, migrations.All)
+	if err := m.Migrate(); err != nil {
+      log.Fatal(err)
+}
 
 	r := gin.Default()
 	r.GET("/health", func(c *gin.Context) {
