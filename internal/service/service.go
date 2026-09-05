@@ -53,3 +53,16 @@ func (s *Service) GetOriginalURL(shortCode string) (string, error) {
 	}
 	return url.OriginalURL, nil
 }
+
+func (s *Service) DeleteURL(shortCode string) error {
+	if err := s.storage.Delete(shortCode); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return &apperrors.AppError{
+				Kind: apperrors.NotFound,
+				Err:  err,
+			}
+		}
+		return err
+	}
+	return nil
+}

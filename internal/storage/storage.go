@@ -8,6 +8,7 @@ import (
 type URLRepository interface {
 	Save(u *models.URL) error
 	GetByShortURL(shortURL string) (*models.URL, error)
+	Delete(shortCode string) error
 }
 
 type gormURLRepository struct {
@@ -28,4 +29,15 @@ func (r *gormURLRepository) GetByShortURL(shortURL string) (*models.URL, error) 
 		return nil, err
 	}
 	return &u, nil
+}
+
+func (r *gormURLRepository) Delete(shortCode string) error {
+	result := r.db.Where("short_code = ?", shortCode).Delete(&models.URL{})
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }

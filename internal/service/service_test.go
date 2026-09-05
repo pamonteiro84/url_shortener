@@ -11,9 +11,10 @@ import (
 )
 
 type fakeStorage struct {
-	urls    map[string]*models.URL
-	saveErr error
-	getErr  error
+	urls      map[string]*models.URL
+	saveErr   error
+	getErr    error
+	deleteErr error
 }
 
 func newFakeStorage() *fakeStorage {
@@ -37,6 +38,17 @@ func (f *fakeStorage) GetByShortURL(shortURL string) (*models.URL, error) {
 		return nil, gorm.ErrRecordNotFound
 	}
 	return u, nil
+}
+
+func (f *fakeStorage) Delete(shortCode string) error {
+	if f.deleteErr != nil {
+		return f.deleteErr
+	}
+	if _, ok := f.urls[shortCode]; !ok {
+		return gorm.ErrRecordNotFound
+	}
+	delete(f.urls, shortCode)
+	return nil
 }
 
 func TestShortenURL_NewURL(t *testing.T) {
@@ -148,5 +160,38 @@ func TestGetOriginalURL_StorageErrorPassthrough(t *testing.T) {
 	var appErr *apperrors.AppError
 	if errors.As(err, &appErr) {
 		t.Errorf("GetOriginalURL() error is *apperrors.AppError, want the raw storage error unwrapped")
+	}
+}
+
+func TestDeleteURL_Success(t *testing.T) {
+	storage := newFakeStorage()
+	svc := NewService(storage)
+
+	shortCode, err := svc.ShortenURL("https://example.com")
+	if err != nil {
+		t.Fatalf("ShortenURL() unexpected error: %v", err)
+	}
+
+	if err := svc.DeleteURL(shortCode); err != nil {
+		t.Fatalf("DeleteURL() unexpected error: %v", err)
+	}
+
+	if _, ok := storage.urls[shortCode]; ok {
+		t.Error("DeleteURL() did not remove the URL from storage")
+	}
+}
+
+func TestDeleteURL_NotFound(t *testing.T) {
+	storage := newFakeStorage()
+	svc := NewService(storage)
+
+	err := svc.DeleteURL("doesnotexist")
+
+	var appErr *apperrors.AppError
+	if !errors.As(err, &appErr) {
+		t.Fatalf("DeleteURL() error = %v, want *apperrors.AppError", err)
+	}
+	if appErr.Kind != apperrors.NotFound {
+		t.Errorf("DeleteURL() Kind = %v, want NotFound", appErr.Kind)
 	}
 }
