@@ -2,11 +2,17 @@ package main
 
 import (
 	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/go-gormigrate/gormigrate/v2"
+	"github.com/joho/godotenv"
+
 	"url_shortener/internal/database"
+	"url_shortener/internal/handlers"
 	"url_shortener/internal/migrations"
+	"url_shortener/internal/router"
+	"url_shortener/internal/service"
+	"url_shortener/internal/storage"
 )
 
 func main() {
@@ -18,17 +24,17 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	m := gormigrate.New(db, gormigrate.DefaultOptions, migrations.All)
 	if err := m.Migrate(); err != nil {
-      log.Fatal(err)
-}
+		log.Fatal(err)
+	}
+
+	repo := storage.NewGormURLRepository(db)
+	svc := service.NewService(repo)
+	h := handlers.NewHandler(svc)
 
 	r := gin.Default()
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
-		})
-	})
+	router.Setup(r, h)
 	r.Run(":8080")
 }

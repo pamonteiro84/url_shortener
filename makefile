@@ -14,5 +14,17 @@ docker-logs:
 build:
 	go build ./...
 
+test:
+	go test ./...
+
+vet:
+	go vet ./...
+
+fmt:
+	gofmt -l .
+
+fmt-write:
+	gofmt -w .
+
 run:
 	go run ./cmd/server
